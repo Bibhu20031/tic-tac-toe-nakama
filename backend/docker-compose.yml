@@ -1,0 +1,19 @@
+services:
+  nakama:
+    image: heroiclabs/nakama:3.20.0
+    container_name: nakama
+    restart: unless-stopped
+    entrypoint:
+      - "/bin/sh"
+      - "-ecx"
+      - |
+        /nakama/nakama migrate up --database.address "$DATABASE_ADDRESS" &&
+        exec /nakama/nakama \
+          --name nakama1 \
+          --database.address "$DATABASE_ADDRESS" \
+          --logger.level DEBUG
+    ports:
+      - "7350:7350"
+      - "7351:7351"
+    environment:
+      - DATABASE_ADDRESS=${DATABASE_ADDRESS}
