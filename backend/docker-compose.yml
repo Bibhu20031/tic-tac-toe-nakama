@@ -1,3 +1,5 @@
+version: "3"
+
 services:
   nakama:
     image: heroiclabs/nakama:3.20.0
@@ -11,9 +13,13 @@ services:
         exec /nakama/nakama \
           --name nakama1 \
           --database.address "$DATABASE_ADDRESS" \
-          --logger.level DEBUG
+          --logger.level DEBUG \
+          --runtime.path /nakama/data/modules
     ports:
       - "7350:7350"
       - "7351:7351"
     environment:
       - DATABASE_ADDRESS=${DATABASE_ADDRESS}
+
+    volumes:
+      - ./nakama/modules:/nakama/data/modules
