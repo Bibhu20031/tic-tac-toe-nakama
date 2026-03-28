@@ -4,13 +4,12 @@ const client = new Client("defaultkey", "localhost", "7350", false);
 
 let socket = null;
 let session = null;
+let initPromise = null; 
 
-export async function initNakama() {
-  try {
-    if (socket) {
-      return { socket, session };
-    }
+export function initNakama() {
+  if (initPromise) return initPromise; // reuse existing init
 
+  initPromise = (async () => {
     const email = "test@test.com";
     const password = "password";
 
@@ -22,16 +21,14 @@ export async function initNakama() {
     console.log("Socket connected");
 
     return { socket, session };
-  } catch (err) {
-    console.error("Nakama init error:", err);
-  }
-}
+  })();
 
+  return initPromise;
+}
 
 export function getSocket() {
   return socket;
 }
-
 
 export function getSession() {
   return session;

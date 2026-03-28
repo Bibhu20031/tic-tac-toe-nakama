@@ -13,6 +13,7 @@ function matchInit(ctx, logger, nk, params) {
   let state = {
     board: Array(9).fill(null),
     players: [],
+    symbols: {}, 
     turn: 0,
     winner: null,
   };
@@ -29,10 +30,18 @@ function matchJoinAttempt(ctx, logger, nk, dispatcher, tick, state, presence, me
 
 function matchJoin(ctx, logger, nk, dispatcher, tick, state, presences) {
   presences.forEach((p) => {
-    state.players.push(p);
+    if (state.players.length < 2) {
+      state.players.push(p);
+
+      const symbol = state.players.length === 1 ? "X" : "O";
+      state.symbols[p.userId] = symbol;
+    }
   });
 
-  logger.info("Players joined: " + state.players.length);
+  dispatcher.broadcastMessage(2, JSON.stringify({
+    players: state.players.map(p => p.userId),
+    symbols: state.symbols
+  }));
 
   return { state };
 }
@@ -46,6 +55,11 @@ function matchLeave(ctx, logger, nk, dispatcher, tick, state, presences) {
 }
 
 function matchLoop(ctx, logger, nk, dispatcher, tick, state, messages) {
+
+  if (state.players.length < 2) {
+  return { state };
+  }
+
   for (const msg of messages) {
     const senderId = msg.sender.userId;
     const currentPlayer = state.players[state.turn];
@@ -69,7 +83,7 @@ function matchLoop(ctx, logger, nk, dispatcher, tick, state, messages) {
     }
 
 
-    const symbol = state.turn === 0 ? "X" : "O";
+    const symbol = state.symbols[senderId];
     state.board[index] = symbol;
 
 
